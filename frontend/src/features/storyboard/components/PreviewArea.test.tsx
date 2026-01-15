@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { PreviewArea } from './PreviewArea';
 import { useStoryboardStore } from '../stores/storyboardStore';
 import { mockApi } from '../../../lib/api-client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -11,17 +12,17 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-const mockVersions = [
-    {
-        id: 1,
-        shot_id: 1,
-        type: 'image',
-        url: 'http://example.com/v1.png',
-        params: {},
-        is_primary: true,
-        created_at: new Date().toISOString()
-    }
-];
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 vi.mock('../../../lib/api-client', () => ({
   mockApi: {
@@ -42,23 +43,22 @@ vi.mock('../../../lib/api-client', () => ({
 describe('PreviewArea', () => {
     beforeEach(() => {
          useStoryboardStore.setState({ selectedShotId: null });
+         queryClient.clear();
     });
 
     it('renders empty state initially', () => {
-        render(<PreviewArea />);
+        render(<PreviewArea />, { wrapper });
         expect(screen.getByText('common.no_content')).toBeInTheDocument();
     });
 
     it('loads versions when shot selected', async () => {
         useStoryboardStore.setState({ selectedShotId: 1 });
-        render(<PreviewArea />);
+        render(<PreviewArea />, { wrapper });
 
         await waitFor(() => {
             expect(mockApi.getShotVersions).toHaveBeenCalledWith(1);
         });
 
-        // We need to wait for the state update to reflect in the UI
-        // Since getShotVersions is called in useEffect, and then state is set.
         await waitFor(() => {
              expect(screen.getByAltText('Preview')).toBeInTheDocument();
         });

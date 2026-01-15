@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { EditPanel } from './EditPanel';
 import { useStoryboardStore } from '../stores/storyboardStore';
 import { mockApi } from '../../../lib/api-client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -17,6 +18,18 @@ vi.mock('../../../lib/api-client', () => ({
     generateVersion: vi.fn().mockResolvedValue({}),
   },
 }));
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 describe('EditPanel', () => {
     beforeEach(() => {
@@ -41,22 +54,23 @@ describe('EditPanel', () => {
             }],
             selectedShotId: null
         });
+        queryClient.clear();
     });
 
     it('renders empty state when no shot selected', () => {
-        render(<EditPanel />);
+        render(<EditPanel />, { wrapper });
         expect(screen.getByText('storyboard.select_shot_to_edit')).toBeInTheDocument();
     });
 
     it('renders shot details when selected', () => {
         useStoryboardStore.setState({ selectedShotId: 1 });
-        render(<EditPanel />);
+        render(<EditPanel />, { wrapper });
         expect(screen.getByDisplayValue('Test prompt')).toBeInTheDocument();
     });
 
     it('updates prompt', async () => {
         useStoryboardStore.setState({ selectedShotId: 1 });
-        render(<EditPanel />);
+        render(<EditPanel />, { wrapper });
         const textarea = screen.getByDisplayValue('Test prompt');
         fireEvent.change(textarea, { target: { value: 'New prompt' } });
 
@@ -71,7 +85,7 @@ describe('EditPanel', () => {
 
     it('triggers generation', async () => {
         useStoryboardStore.setState({ selectedShotId: 1 });
-        render(<EditPanel />);
+        render(<EditPanel />, { wrapper });
 
         const button = screen.getByText('storyboard.generate');
         fireEvent.click(button);
