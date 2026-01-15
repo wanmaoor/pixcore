@@ -1,0 +1,66 @@
+{
+    "common": {
+        "language": "语言",
+        "switch_language": "切换语言",
+        "welcome": "欢迎使用 PixCore",
+        "cancel": "取消",
+        "create": "创建",
+        "creating": "创建中...",
+        "close": "关闭",
+        "back": "返回",
+        "save": "保存",
+        "delete": "删除",
+        "edit": "编辑",
+        "share": "分享",
+        "no_content": "暂无内容"
+    },
+    "projects": {
+        "search_placeholder": "搜索项目...",
+        "new_project": "新建项目",
+        "recent_projects": "最近项目",
+        "create_new": "创建新项目",
+        "sort": {
+            "last_edited": "最后编辑",
+            "name": "名称",
+            "date_created": "创建日期"
+        },
+        "types": {
+            "story": "故事",
+            "animation": "动画",
+            "short": "短片"
+        },
+        "create_dialog": {
+            "title": "创建新项目",
+            "description": "开启新的创作旅程。在下方设置项目详情。",
+            "name_label": "项目名称",
+            "name_placeholder": "例如：黑客帝国重装上阵",
+            "type_label": "项目类型"
+        }
+    },
+    "storyboard": {
+        "workspace": "分镜工作台",
+        "shots": "镜头列表",
+        "preview": "预览",
+        "parameters": "参数设置",
+        "generate": "立即生成",
+        "generating": "生成中...",
+        "prompt": "提示词 (Prompt)",
+        "prompt_placeholder": "描述你的镜头画面...",
+        "story_desc": "剧情描述",
+        "visual_desc": "视觉描述",
+        "versions": "版本记录",
+        "add_shot": "添加镜头",
+        "shot": "镜头",
+        "duration": "时长",
+        "camera": "运镜",
+        "lens": "镜头",
+        "action": "动作",
+        "dialogue": "对白",
+        "no_shots": "暂无镜头，点击上方按钮添加",
+        "no_prompt": "无提示词",
+        "select_shot_to_edit": "请选择一个镜头进行编辑",
+        "estimated_time": "预计时间",
+        "cost": "消耗",
+        "credits": "积分"
+    }
+}

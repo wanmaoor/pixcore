@@ -1,0 +1,66 @@
+{
+    "common": {
+        "language": "Language",
+        "switch_language": "Switch Language",
+        "welcome": "Welcome to PixCore",
+        "cancel": "Cancel",
+        "create": "Create",
+        "creating": "Creating...",
+        "close": "Close",
+        "back": "Back",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "share": "Share",
+        "no_content": "No Content"
+    },
+    "projects": {
+        "search_placeholder": "Search projects...",
+        "new_project": "New Project",
+        "recent_projects": "Recent Projects",
+        "create_new": "Create New",
+        "sort": {
+            "last_edited": "Last Edited",
+            "name": "Name",
+            "date_created": "Date Created"
+        },
+        "types": {
+            "story": "Story",
+            "animation": "Animation",
+            "short": "Short"
+        },
+        "create_dialog": {
+            "title": "Create New Project",
+            "description": "Start a new creative journey. Set up your project details below.",
+            "name_label": "Project Name",
+            "name_placeholder": "e.g. The Matrix Reloaded",
+            "type_label": "Project Type"
+        }
+    },
+    "storyboard": {
+        "workspace": "Workspace",
+        "shots": "Shots",
+        "preview": "Preview",
+        "parameters": "Parameters",
+        "generate": "Generate",
+        "generating": "Generating...",
+        "prompt": "Prompt",
+        "prompt_placeholder": "Describe your shot...",
+        "story_desc": "Story Description",
+        "visual_desc": "Visual Description",
+        "versions": "Versions",
+        "add_shot": "Add Shot",
+        "shot": "Shot",
+        "duration": "Duration",
+        "camera": "Camera",
+        "lens": "Lens",
+        "action": "Action",
+        "dialogue": "Dialogue",
+        "no_shots": "No shots yet, click above to add",
+        "no_prompt": "No Prompt",
+        "select_shot_to_edit": "Select a shot to edit",
+        "estimated_time": "Estimated Time",
+        "cost": "Cost",
+        "credits": "Credits"
+    }
+}

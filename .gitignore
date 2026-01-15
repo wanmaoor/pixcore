@@ -1,0 +1,54 @@
+# Python
+.env
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite
+*.db
+*.db-journal
+.Python
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node.js
+node_modules/
+dist/
+build/
+.DS_Store
+*.log
+.pnpm-debug.log*
+
+# Vite
+.vite/
+
+# Tauri
+/frontend/src-tauri/target
+/frontend/src-tauri/WixTools
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Storage
+PixcoreStorage/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# AI
+.claude
+.gemini-clipboard
+AGENTS.md
+GEMINI.md
