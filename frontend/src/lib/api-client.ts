@@ -176,8 +176,12 @@ export const mockApi = {
   },
   createShot: async (shot: Partial<Shot>): Promise<Shot> => {
     await delay(500);
+
+    // ✅ 使用时间戳 + 随机数生成唯一 ID，避免重复
+    const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+
     const newShot: Shot = {
-      id: Math.floor(Math.random() * 10000),
+      id: uniqueId,
       scene_id: 1,
       order: mockShots.length + 1,
       shot_type: null,
@@ -195,7 +199,13 @@ export const mockApi = {
       created_at: new Date().toISOString(),
       ...shot
     };
-    mockShots.push(newShot);
+
+    // ✅ 检查是否已存在相同 ID，避免重复添加
+    const exists = mockShots.some(s => s.id === newShot.id);
+    if (!exists) {
+      mockShots.push(newShot);
+    }
+
     return newShot;
   },
   updateShot: async (id: number, updates: Partial<Shot>): Promise<Shot> => {

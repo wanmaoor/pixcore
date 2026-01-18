@@ -17,7 +17,15 @@ export const useStoryboardStore = create<StoryboardState>((set) => ({
     shots: [],
     setSelectedShotId: (id) => set({ selectedShotId: id }),
     setShots: (shots) => set({ shots }),
-    addShot: (shot) => set((state) => ({ shots: [...state.shots, shot] })),
+    addShot: (shot) => set((state) => {
+        // ✅ 防止添加重复的 shot（根据 ID 检查）
+        const exists = state.shots.some(s => s.id === shot.id);
+        if (exists) {
+            console.warn(`Shot with id ${shot.id} already exists, skipping duplicate`);
+            return state; // 不做任何更改
+        }
+        return { shots: [...state.shots, shot] };
+    }),
     updateShot: (id, updates) => set((state) => ({
         shots: state.shots.map((s) => (s.id === id ? { ...s, ...updates } : s)),
     })),
