@@ -2,45 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, SkipBack, SkipForward, Maximize2, Layers, Check } from 'lucide-react';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi, Version } from '../../../lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { mockApi } from '../../../lib/api-client';
 
 export const PreviewArea: React.FC = () => {
     const { t } = useTranslation();
     const { selectedShotId } = useStoryboardStore();
-    const [versions, setVersions] = useState<Version[]>([]);
     const [activeVersionId, setActiveVersionId] = useState<number | null>(null);
 
+    const { data: versions = [] } = useQuery({
+        queryKey: ['versions', selectedShotId],
+        queryFn: () => (selectedShotId ? mockApi.getShotVersions(selectedShotId) : Promise.resolve([])),
+        enabled: !!selectedShotId,
+    });
+
     useEffect(() => {
-        const loadVersions = async () => {
-            if (selectedShotId) {
-                try {
-                    const data = await mockApi.getShotVersions(selectedShotId);
-                    setVersions(data);
-                    // Only set active version if not set or if we want to auto-switch to primary
-                    // For now, let's auto-switch to the primary (newest usually)
-                    const primary = data.find(v => v.is_primary) || data[0];
-                    if (primary) setActiveVersionId(primary.id);
-                } catch (error) {
-                    console.error('Failed to load versions', error);
-                }
-            }
-        };
+        if (versions.length > 0 && activeVersionId === null) {
+            const primary = versions.find(v => v.is_primary) || versions[0];
+            if (primary) setActiveVersionId(primary.id);
+        } else if (versions.length > 0 && !versions.find(v => v.id === activeVersionId)) {
+             // If active version is not in the list (e.g. after switching shots), reset
+            const primary = versions.find(v => v.is_primary) || versions[0];
+            if (primary) setActiveVersionId(primary.id);
+        }
+    }, [versions, activeVersionId]);
 
-        loadVersions();
+    // Update active version when a new version is added (detected by length change)
+    // This is a simple heuristic.
+    useEffect(() => {
+         if (versions.length > 0) {
+             // If we have a new primary, switch to it?
+             // Or just stick to the current one?
+             // For now, let's just ensure if we are generating, we might want to switch to the new one.
+             // But React Query handles the data update.
+         }
+    }, [versions.length]);
 
-        // Listen for regeneration events
-        const handleVersionGenerated = (e: Event) => {
-            const detail = (e as CustomEvent).detail;
-            if (detail.shotId === selectedShotId) {
-                loadVersions();
-            }
-        };
-
-        window.addEventListener('version-generated', handleVersionGenerated);
-        return () => window.removeEventListener('version-generated', handleVersionGenerated);
-    }, [selectedShotId]);
-
-    const activeVersion = versions.find(v => v.id === activeVersionId);
+    const activeVersion = versions.find(v => v.id === activeVersionId) || versions[0];
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
