@@ -152,13 +152,13 @@ export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve
 export const mockApi = {
   getProjects: async (): Promise<Project[]> => {
     await delay(500);
-    return mockProjects;
+    return [...mockProjects];
   },
   getProject: async (id: number): Promise<Project> => {
     await delay(300);
     const p = mockProjects.find(p => p.id === id);
     if (!p) throw new Error('Project not found');
-    return p;
+    return { ...p };
   },
   createProject: async (data: Partial<Project>): Promise<Project> => {
     await delay(800);
@@ -172,7 +172,7 @@ export const mockApi = {
   },
   getShots: async (projectId: number): Promise<Shot[]> => {
     await delay(500);
-    return mockShots;
+    return [...mockShots];
   },
   createShot: async (shot: Partial<Shot>): Promise<Shot> => {
     await delay(500);
@@ -217,7 +217,7 @@ export const mockApi = {
   },
   getShotVersions: async (shotId: number): Promise<Version[]> => {
     await delay(300);
-    return mockVersions.filter(v => v.shot_id === shotId);
+    return [...mockVersions.filter(v => v.shot_id === shotId)];
   },
   generateVersion: async (shotId: number): Promise<Version> => {
     await delay(2000); // Simulate generation time

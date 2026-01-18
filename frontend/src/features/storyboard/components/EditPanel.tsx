@@ -2,14 +2,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wand2, Info, Layout, Camera, Move, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useStoryboardStore } from '../stores/storyboardStore';
 import { mockApi, Shot } from '../../../lib/api-client';
 
 export const EditPanel: React.FC = () => {
     const { t } = useTranslation();
+    const queryClient = useQueryClient();
     const { selectedShotId, shots, updateShot } = useStoryboardStore();
     const [selectedShot, setSelectedShot] = useState<Shot | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
 
     // Sync local state when selectedShotId changes
     useEffect(() => {
@@ -18,6 +19,19 @@ export const EditPanel: React.FC = () => {
             if (shot) setSelectedShot(shot);
         }
     }, [selectedShotId, shots]);
+
+    const mutation = useMutation({
+        mutationFn: (shotId: number) => mockApi.generateVersion(shotId),
+        onSuccess: (_, shotId) => {
+            queryClient.invalidateQueries({ queryKey: ['versions', shotId] });
+            handleUpdate('status', 'completed');
+            toast.success('Generation completed');
+        },
+        onError: () => {
+             handleUpdate('status', 'failed');
+             toast.error('Generation failed');
+        }
+    });
 
     // Handle field updates
     const handleUpdate = async (field: keyof Shot, value: any) => {
@@ -37,37 +51,13 @@ export const EditPanel: React.FC = () => {
         }
     };
 
-    const handleGenerate = async () => {
+    const handleGenerate = () => {
         if (!selectedShot) return;
-        setIsGenerating(true);
-        try {
-            // Update status to generating
-            handleUpdate('status', 'generating');
-            
-            // Trigger generation
-            await mockApi.generateVersion(selectedShot.id);
-            
-            // Update status to completed
-            handleUpdate('status', 'completed');
-            toast.success('Generation completed');
-            
-            // Force refresh versions (PreviewArea listens to selectedShotId, maybe trigger reload via event or store?)
-            // For now, PreviewArea will just need to re-fetch or we add version to store.
-            // A simple hack is to re-set the selected ID to trigger effects,
-            // but ideally we should have a 'versions' store or react-query.
-            // Since PreviewArea fetches on selectedShotId change, we can't easily trigger it without a refetch signal.
-            // Let's rely on the user clicking the version tab or re-selecting for now in this MVP state,
-            // OR dispatch a custom event.
-            window.dispatchEvent(new CustomEvent('version-generated', { detail: { shotId: selectedShot.id } }));
-
-        } catch (error) {
-            console.error(error);
-            handleUpdate('status', 'failed');
-            toast.error('Generation failed');
-        } finally {
-            setIsGenerating(false);
-        }
+        handleUpdate('status', 'generating');
+        mutation.mutate(selectedShot.id);
     };
+
+    const isGenerating = mutation.isPending;
 
     if (!selectedShot) return (
         <div className="h-full flex items-center justify-center p-8 text-center opacity-30">
