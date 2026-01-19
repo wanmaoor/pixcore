@@ -12,7 +12,7 @@ vi.mock('react-i18next', () => ({
 
 const mockCreateProject = vi.fn().mockResolvedValue({ id: 123 });
 
-vi.mock('../../../lib/api-client', () => ({
+vi.mock('../../../lib/mock-api', () => ({
   mockApi: {
     createProject: (...args: any[]) => mockCreateProject(...args),
   },

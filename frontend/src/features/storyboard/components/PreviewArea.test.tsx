@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { PreviewArea } from './PreviewArea';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi } from '../../../lib/api-client';
+import { mockApi } from '../../../lib/mock-api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
@@ -24,7 +24,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
 
-vi.mock('../../../lib/api-client', () => ({
+vi.mock('../../../lib/mock-api', () => ({
   mockApi: {
     getShotVersions: vi.fn().mockResolvedValue([
         {

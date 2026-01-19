@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { EditPanel } from './EditPanel';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi } from '../../../lib/api-client';
+import { mockApi } from '../../../lib/mock-api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
@@ -12,7 +12,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../../lib/api-client', () => ({
+vi.mock('../../../lib/mock-api', () => ({
   mockApi: {
     updateShot: vi.fn().mockResolvedValue({}),
     generateVersion: vi.fn().mockResolvedValue({}),
