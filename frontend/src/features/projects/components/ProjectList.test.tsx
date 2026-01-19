@@ -14,7 +14,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../../lib/api-client', () => ({
+vi.mock('../../../lib/mock-api', () => ({
   mockApi: {
     getProjects: vi.fn().mockResolvedValue([
       {
