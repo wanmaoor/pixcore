@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { assetApi } from '../../../lib/api';
 
 export interface Asset {
     id: number;
@@ -22,14 +23,8 @@ interface AssetStoreState {
     addAsset: (asset: Asset) => void;
     updateAsset: (id: number, updates: Partial<Asset>) => void;
     deleteAsset: (id: number) => Promise<boolean>; // Returns true if deleted, false if archived (due to ref)
-    checkAssetUsage: (id: number) => Promise<boolean>; // Stub for backend check
+    checkAssetUsage: (id: number) => Promise<boolean>;
 }
-
-// Mock backend check function
-const checkAssetUsageStub = async (id: number) => {
-    // In a real app, this would call the API
-    return false; // Default to not used
-};
 
 export const useAssetStore = create<AssetStoreState>((set, get) => ({
     assets: [],
@@ -45,7 +40,7 @@ export const useAssetStore = create<AssetStoreState>((set, get) => ({
     })),
 
     deleteAsset: async (id) => {
-        // 1. Check usage
+        // 1. Check usage via real API
         const isUsed = await get().checkAssetUsage(id);
 
         if (isUsed) {
@@ -55,13 +50,27 @@ export const useAssetStore = create<AssetStoreState>((set, get) => ({
             }));
             return false;
         } else {
-            // Hard delete
-            set((state) => ({
-                assets: state.assets.filter((a) => a.id !== id)
-            }));
-            return true;
+            // Hard delete via API
+            try {
+                await assetApi.delete(id);
+                set((state) => ({
+                    assets: state.assets.filter((a) => a.id !== id)
+                }));
+                return true;
+            } catch (error) {
+                console.error('Failed to delete asset', error);
+                return false;
+            }
         }
     },
 
-    checkAssetUsage: checkAssetUsageStub,
+    checkAssetUsage: async (id: number) => {
+        try {
+            const refs = await assetApi.getReferences(id);
+            return !refs.can_delete;
+        } catch (error) {
+            console.error('Failed to check asset usage', error);
+            return false;
+        }
+    },
 }));

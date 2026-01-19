@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, SkipBack, SkipForward, Maximize2, Layers } from 'lucide-react';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi, Version } from '../../../lib/api-client';
+import { versionApi } from '../../../lib/api';
+import type { Version } from '../../../lib/api-client';
 import { VersionThumbnail } from './VersionThumbnail';
 
 /**
@@ -20,7 +21,7 @@ export const PreviewArea: React.FC = () => {
     const loadVersions = async () => {
       if (selectedShotId) {
         try {
-          const data = await mockApi.getShotVersions(selectedShotId);
+          const data = await versionApi.getByShot(selectedShotId);
           setVersions(data);
           // Auto-switch to primary version
           const primary = data.find((v) => v.is_primary) || data[0];

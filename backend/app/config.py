@@ -51,5 +51,14 @@ class Settings(BaseSettings):
     # Logging
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
+    # AI Generation APIs
+    replicate_api_token: str | None = None
+    openai_api_key: str | None = None
+    stability_api_key: str | None = None
+
+    # Default generation model
+    default_image_model: str = "stability-ai/sdxl"
+    default_video_model: str = "stability-ai/stable-video-diffusion"
+
 
 settings = Settings()

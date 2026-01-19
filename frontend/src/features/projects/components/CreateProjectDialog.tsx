@@ -2,7 +2,9 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { mockApi, Project } from '../../../lib/api-client';
+import { projectApi } from '../../../lib/api';
+import type { Project } from '../../../lib/api-client';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
 interface CreateProjectDialogProps {
@@ -13,6 +15,7 @@ interface CreateProjectDialogProps {
 export const CreateProjectDialog = ({ open, onOpenChange }: CreateProjectDialogProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -23,7 +26,9 @@ export const CreateProjectDialog = ({ open, onOpenChange }: CreateProjectDialogP
         e.preventDefault();
         setLoading(true);
         try {
-            const newProject = await mockApi.createProject(formData);
+            const newProject = await projectApi.create(formData);
+            // 刷新项目列表缓存
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
             onOpenChange(false);
             navigate(`/project/${newProject.id}`);
         } catch (error) {

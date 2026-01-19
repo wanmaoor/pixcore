@@ -35,3 +35,6 @@ class Project(Base):
     # Relationships
     scenes: Mapped[list["Scene"]] = relationship("Scene", back_populates="project", cascade="all, delete-orphan")
     assets: Mapped[list["Asset"]] = relationship("Asset", back_populates="project", cascade="all, delete-orphan")
+    consistency_locks: Mapped[list["ConsistencyLock"]] = relationship(
+        "ConsistencyLock", back_populates="project", cascade="all, delete-orphan"
+    )

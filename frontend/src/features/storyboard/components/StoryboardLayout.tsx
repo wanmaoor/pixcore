@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Settings, Share2, Layers } from 'lucide-react';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi } from '../../../lib/api-client';
+import { shotApi } from '../../../lib/api';
 import { ShotList } from './ShotList';
 import { PreviewArea } from './PreviewArea';
 import { EditPanel } from './EditPanel';
@@ -18,7 +18,7 @@ export const StoryboardLayout = () => {
   // ✅ 使用 React Query 获取数据，自动处理加载、错误和缓存
   const { data: shots, isLoading, error } = useQuery({
     queryKey: ['shots', projectId],
-    queryFn: () => mockApi.getShots(parseInt(projectId!)),
+    queryFn: () => shotApi.getByProject(parseInt(projectId!)),
     enabled: !!projectId, // 只在 projectId 存在时执行查询
   });
 

@@ -61,6 +61,7 @@ async def health_check():
 # Import routers (after app is created to avoid circular imports)
 from app.api import (  # noqa: E402
     assets,
+    consistency,
     generation,
     projects,
     scenes,
@@ -77,6 +78,7 @@ app.include_router(assets.router, prefix=f"{settings.api_prefix}/assets", tags=[
 app.include_router(versions.router, prefix=f"{settings.api_prefix}/versions", tags=["versions"])
 app.include_router(generation.router, prefix=f"{settings.api_prefix}/generation", tags=["generation"])
 app.include_router(settings_router.router, prefix=f"{settings.api_prefix}/settings", tags=["settings"])
+app.include_router(consistency.router, prefix=f"{settings.api_prefix}/projects", tags=["consistency"])
 
 
 if __name__ == "__main__":

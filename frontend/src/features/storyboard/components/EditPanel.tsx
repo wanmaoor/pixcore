@@ -4,7 +4,8 @@ import { Wand2, Info, Layout, Camera, Move, Clock, Loader2 } from 'lucide-react'
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi, Shot } from '../../../lib/api-client';
+import { shotApi, generationApi } from '../../../lib/api';
+import type { Shot } from '../../../lib/api-client';
 
 export const EditPanel: React.FC = () => {
     const { t } = useTranslation();
@@ -21,11 +22,19 @@ export const EditPanel: React.FC = () => {
     }, [selectedShotId, shots]);
 
     const mutation = useMutation({
-        mutationFn: (shotId: number) => mockApi.generateVersion(shotId),
+        mutationFn: (shotId: number) => {
+            const shot = shots.find(s => s.id === shotId);
+            if (!shot) throw new Error('Shot not found');
+            return generationApi.textToImage({
+                shot_id: shotId,
+                prompt: shot.prompt,
+                negative_prompt: shot.negative_prompt || undefined,
+            });
+        },
         onSuccess: (_, shotId) => {
             queryClient.invalidateQueries({ queryKey: ['versions', shotId] });
             handleUpdate('status', 'completed');
-            toast.success('Generation completed');
+            toast.success('Generation task submitted');
         },
         onError: () => {
              handleUpdate('status', 'failed');
@@ -36,15 +45,15 @@ export const EditPanel: React.FC = () => {
     // Handle field updates
     const handleUpdate = async (field: keyof Shot, value: any) => {
         if (!selectedShot) return;
-        
+
         // Optimistic update local state
         const updatedShot = { ...selectedShot, [field]: value };
         setSelectedShot(updatedShot);
-        
+
         // Update store and backend
         try {
             updateShot(selectedShot.id, { [field]: value });
-            await mockApi.updateShot(selectedShot.id, { [field]: value });
+            await shotApi.update(selectedShot.id, { [field]: value });
         } catch (error) {
             console.error('Failed to update shot', error);
             toast.error('Failed to save changes');

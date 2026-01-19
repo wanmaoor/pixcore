@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi } from '../../../lib/api-client';
+import { shotApi } from '../../../lib/api';
 import { SortableShotItem } from './SortableShotItem';
 
 /**
@@ -40,7 +40,9 @@ export const ShotList: React.FC = () => {
   // ✅ 使用 useCallback 避免每次渲染创建新函数
   const handleAddShot = useCallback(async () => {
     try {
-      const newShot = await mockApi.createShot({});
+      // 获取当前场景 ID（假设第一个场景）
+      const sceneId = shots[0]?.scene_id || 1;
+      const newShot = await shotApi.create(sceneId, { prompt: '' });
       addShot(newShot);
       setSelectedShotId(newShot.id);
       toast.success('Shot added successfully');
@@ -48,7 +50,7 @@ export const ShotList: React.FC = () => {
       toast.error('Failed to add shot');
       console.error(error);
     }
-  }, [addShot, setSelectedShotId]);
+  }, [shots, addShot, setSelectedShotId]);
 
   const handleDeleteShot = useCallback(
     async (e: React.MouseEvent, id: number) => {
@@ -56,7 +58,7 @@ export const ShotList: React.FC = () => {
       if (!confirm(t('common.delete') + '?')) return;
 
       try {
-        await mockApi.deleteShot(id);
+        await shotApi.delete(id);
         deleteShot(id);
         toast.success('Shot deleted');
       } catch (error) {
@@ -83,8 +85,9 @@ export const ShotList: React.FC = () => {
         // Optimistic update
         reorderShots(newShots);
 
-        // API Call
-        mockApi.reorderShots(1, newShots.map((s) => s.id)).catch((err) => {
+        // API Call - 使用当前项目 ID
+        const projectId = 1; // TODO: 从 context 或 store 获取
+        shotApi.reorder(projectId, newShots.map((s) => s.id)).catch((err) => {
           console.error('Failed to reorder', err);
           toast.error('Failed to save order');
         });

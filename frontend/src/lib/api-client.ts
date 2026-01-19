@@ -10,6 +10,50 @@ export const apiClient = axios.create({
   },
 });
 
+// ============ Consistency Settings Types ============
+
+export interface LockedAsset {
+  id: number;
+  name: string;
+  description: string | null;
+  reference_images: string[];
+  type: string;
+}
+
+export interface ConsistencySettings {
+  lock_character: boolean;
+  lock_style: boolean;
+  lock_world: boolean;
+  lock_key_object: boolean;
+  locked_characters: LockedAsset[];
+  locked_styles: LockedAsset[];
+  locked_worlds: LockedAsset[];
+  locked_key_objects: LockedAsset[];
+}
+
+export interface ConsistencySettingsUpdate {
+  lock_character?: boolean;
+  lock_style?: boolean;
+  lock_world?: boolean;
+  lock_key_object?: boolean;
+  locked_character_ids?: number[];
+  locked_style_ids?: number[];
+  locked_world_ids?: number[];
+  locked_key_object_ids?: number[];
+}
+
+export interface PromptInjection {
+  project_id: number;
+  injection_text: string;
+  has_injections: boolean;
+  active_locks: {
+    character: boolean;
+    style: boolean;
+    world: boolean;
+    key_object: boolean;
+  };
+}
+
 export interface Project {
   id: number;
   name: string;
@@ -258,5 +302,108 @@ export const mockApi = {
     mockShots.forEach((shot, index) => {
         shot.order = index + 1;
     });
-  }
+  },
+
+  // ============ Consistency Settings API ============
+
+  getConsistencySettings: async (projectId: number): Promise<ConsistencySettings> => {
+    await delay(300);
+    const project = mockProjects.find(p => p.id === projectId);
+    if (!project) throw new Error('Project not found');
+
+    // Return mock consistency settings
+    return {
+      lock_character: project.lock_character,
+      lock_style: project.lock_style,
+      lock_world: project.lock_world,
+      lock_key_object: project.lock_key_object,
+      locked_characters: [],
+      locked_styles: [],
+      locked_worlds: [],
+      locked_key_objects: [],
+    };
+  },
+
+  updateConsistencySettings: async (
+    projectId: number,
+    updates: ConsistencySettingsUpdate
+  ): Promise<ConsistencySettings> => {
+    await delay(500);
+    const project = mockProjects.find(p => p.id === projectId);
+    if (!project) throw new Error('Project not found');
+
+    // Update lock flags
+    if (updates.lock_character !== undefined) {
+      project.lock_character = updates.lock_character;
+    }
+    if (updates.lock_style !== undefined) {
+      project.lock_style = updates.lock_style;
+    }
+    if (updates.lock_world !== undefined) {
+      project.lock_world = updates.lock_world;
+    }
+    if (updates.lock_key_object !== undefined) {
+      project.lock_key_object = updates.lock_key_object;
+    }
+
+    // Return updated settings
+    return {
+      lock_character: project.lock_character,
+      lock_style: project.lock_style,
+      lock_world: project.lock_world,
+      lock_key_object: project.lock_key_object,
+      locked_characters: [],
+      locked_styles: [],
+      locked_worlds: [],
+      locked_key_objects: [],
+    };
+  },
+
+  updateLockedAssets: async (
+    projectId: number,
+    lockType: 'character' | 'style' | 'world' | 'key_object',
+    assetIds: number[]
+  ): Promise<ConsistencySettings> => {
+    await delay(300);
+    // In real implementation, this would update the consistency_locks table
+    console.log(`Updating ${lockType} locks for project ${projectId}:`, assetIds);
+
+    const project = mockProjects.find(p => p.id === projectId);
+    if (!project) throw new Error('Project not found');
+
+    return {
+      lock_character: project.lock_character,
+      lock_style: project.lock_style,
+      lock_world: project.lock_world,
+      lock_key_object: project.lock_key_object,
+      locked_characters: [],
+      locked_styles: [],
+      locked_worlds: [],
+      locked_key_objects: [],
+    };
+  },
+
+  getPromptInjection: async (projectId: number): Promise<PromptInjection> => {
+    await delay(200);
+    // In real implementation, this returns the combined prompt injection text
+    return {
+      project_id: projectId,
+      injection_text: '',
+      has_injections: false,
+      active_locks: {
+        character: false,
+        style: false,
+        world: false,
+        key_object: false,
+      },
+    };
+  },
+
+  updateProject: async (id: number, updates: Partial<Project>): Promise<Project> => {
+    await delay(300);
+    const index = mockProjects.findIndex(p => p.id === id);
+    if (index === -1) throw new Error('Project not found');
+    mockProjects[index] = { ...mockProjects[index], ...updates, updated_at: new Date().toISOString() };
+    return mockProjects[index];
+  },
 };

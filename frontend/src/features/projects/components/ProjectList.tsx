@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, Film, Clapperboard, Video } from 'lucide-react';
-import { mockApi, Project } from '../../../lib/api-client';
+import { projectApi } from '../../../lib/api';
+import type { Project } from '../../../lib/api-client';
 import { CreateProjectDialog } from './CreateProjectDialog';
 import { LanguageSwitcher } from '../../../components/LanguageSwitcher';
 import { ProjectCard } from './ProjectCard';
@@ -26,7 +27,7 @@ export const ProjectList = () => {
   // ✅ 使用 React Query 进行数据获取，自动处理缓存、重试和去重
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: mockApi.getProjects,
+    queryFn: projectApi.getAll,
   });
 
   // ✅ 使用 useCallback 稳定化函数引用
