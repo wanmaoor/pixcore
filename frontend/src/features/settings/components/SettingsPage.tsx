@@ -1,6 +1,8 @@
-import { Settings, Key, Folder, Info, Monitor } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Settings, Key, Folder, Info, Monitor, Cpu } from 'lucide-react';
 import { ApiKeyInput } from './ApiKeyInput';
 import { StoragePathSettings } from './StoragePathSettings';
+import { ModelSettings } from './ModelSettings';
 import { useSystemInfo, useTauriEnvironment } from '../../../hooks/useTauri';
 
 /**
@@ -8,31 +10,47 @@ import { useSystemInfo, useTauriEnvironment } from '../../../hooks/useTauri';
  * 包含 API Key 管理、存储路径设置、系统信息等
  */
 export const SettingsPage = () => {
+  const { t } = useTranslation();
   const isTauri = useTauriEnvironment();
   const { systemInfo, loading: systemLoading } = useSystemInfo();
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="max-w-3xl mx-auto p-6">
+      <div className="max-w-3xl mx-auto p-6 pb-20">
         {/* 页面标题 */}
         <div className="flex items-center gap-3 mb-8">
           <div className="p-2 bg-zinc-800 rounded-lg">
             <Settings className="w-6 h-6 text-zinc-300" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">设置</h1>
-            <p className="text-sm text-zinc-500">管理应用配置和 API 密钥</p>
+            <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
+            <p className="text-sm text-zinc-500">{t('settings.description')}</p>
           </div>
         </div>
+
+        {/* 模型配置区域 */}
+        <section className="mb-12">
+          <div className="flex items-center gap-2 mb-4">
+            <Cpu className="w-5 h-5 text-zinc-400" />
+            <h2 className="text-lg font-semibold">{t('settings.model_config')}</h2>
+          </div>
+          <p className="text-sm text-zinc-500 mb-4">
+            {t('settings.model_config_desc')}
+          </p>
+
+          <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800">
+            <ModelSettings />
+          </div>
+        </section>
 
         {/* API Key 设置区域 */}
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Key className="w-5 h-5 text-zinc-400" />
-            <h2 className="text-lg font-semibold">API 密钥</h2>
+            <h2 className="text-lg font-semibold">{t('settings.api_keys')}</h2>
           </div>
           <p className="text-sm text-zinc-500 mb-4">
-            配置 AI 服务提供商的 API 密钥。密钥将安全存储在系统密钥链中。
+            {t('settings.api_keys_desc')}
           </p>
 
           <div className="space-y-4">
@@ -68,10 +86,10 @@ export const SettingsPage = () => {
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Folder className="w-5 h-5 text-zinc-400" />
-            <h2 className="text-lg font-semibold">存储设置</h2>
+            <h2 className="text-lg font-semibold">{t('settings.storage')}</h2>
           </div>
           <p className="text-sm text-zinc-500 mb-4">
-            配置项目文件和媒体资源的存储位置。
+            {t('settings.storage_desc')}
           </p>
 
           <StoragePathSettings />
@@ -82,7 +100,7 @@ export const SettingsPage = () => {
           <section className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Monitor className="w-5 h-5 text-zinc-400" />
-              <h2 className="text-lg font-semibold">系统信息</h2>
+              <h2 className="text-lg font-semibold">{t('settings.system')}</h2>
             </div>
 
             <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
@@ -122,7 +140,7 @@ export const SettingsPage = () => {
         <section>
           <div className="flex items-center gap-2 mb-4">
             <Info className="w-5 h-5 text-zinc-400" />
-            <h2 className="text-lg font-semibold">关于</h2>
+            <h2 className="text-lg font-semibold">{t('settings.about')}</h2>
           </div>
 
           <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">

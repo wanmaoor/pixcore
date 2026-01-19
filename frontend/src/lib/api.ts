@@ -296,6 +296,24 @@ export const generationApi = {
   },
 };
 
+// ============ Settings API ============
+
+export const settingsApi = {
+  getAll: async (): Promise<Record<string, string>> => {
+    const response = await apiClient.get<Record<string, string>>('/settings/');
+    return response.data;
+  },
+
+  update: async (settings: Record<string, string>): Promise<void> => {
+    await apiClient.put('/settings/', settings);
+  },
+
+  getByKey: async (key: string): Promise<string> => {
+    const response = await apiClient.get<Record<string, string>>(`/settings/${key}`);
+    return response.data[key];
+  },
+};
+
 // ============ Combined API object for easy imports ============
 
 export const api = {
@@ -306,6 +324,7 @@ export const api = {
   assets: assetApi,
   consistency: consistencyApi,
   generation: generationApi,
+  settings: settingsApi,
 };
 
 export default api;

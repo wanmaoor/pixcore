@@ -62,5 +62,19 @@
         "estimated_time": "预计时间",
         "cost": "消耗",
         "credits": "积分"
+    },
+    "settings": {
+        "title": "设置",
+        "description": "管理应用配置和 API 密钥",
+        "model_config": "模型配置",
+        "model_config_desc": "配置默认使用的 AI 模型及生成参数预设。",
+        "api_keys": "API 密钥",
+        "api_keys_desc": "配置 AI 服务提供商的 API 密钥。密钥将安全存储在系统密钥链中。",
+        "storage": "存储设置",
+        "storage_desc": "配置项目文件和媒体资源的存储位置。",
+        "system": "系统信息",
+        "about": "关于",
+        "save_success": "设置已保存",
+        "save_failed": "保存失败"
     }
 }
