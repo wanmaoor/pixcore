@@ -439,6 +439,9 @@ function AssetListItem({ asset, isSelected, onClick, onDelete, onArchive }: Asse
   );
 }
 
+import { useFormWithValidation } from '../../../../hooks/useFormWithValidation';
+import { assetUpdateSchema, AssetFormValues } from '../../../../lib/validation';
+
 // ============ 详情面板 ============
 
 interface AssetDetailPanelProps {
@@ -451,12 +454,32 @@ interface AssetDetailPanelProps {
 
 function AssetDetailPanel({ asset, onClose, onUpdate, onDelete, onArchive }: AssetDetailPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ name: asset.name, description: asset.description });
   const config = assetTypeConfig[asset.type];
   const Icon = config.icon;
 
-  const handleSave = () => {
-    onUpdate(editData);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useFormWithValidation<AssetFormValues>({
+    schema: assetUpdateSchema,
+    defaultValues: {
+      name: asset.name,
+      description: asset.description,
+    },
+  });
+
+  // 当 asset 变化时更新表单
+  useEffect(() => {
+    reset({
+      name: asset.name,
+      description: asset.description,
+    });
+  }, [asset, reset]);
+
+  const onSubmit = (data: AssetFormValues) => {
+    onUpdate(data);
     setIsEditing(false);
   };
 
@@ -496,35 +519,40 @@ function AssetDetailPanel({ asset, onClose, onUpdate, onDelete, onArchive }: Ass
           )}
         </div>
 
-        {/* 名称 */}
-        <div className="mb-4">
-          <label className="block text-xs text-zinc-500 mb-1">名称</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={editData.name}
-              onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-blue-500"
-            />
-          ) : (
-            <p className="text-zinc-100">{asset.name}</p>
-          )}
-        </div>
+        <form id="asset-detail-form" onSubmit={handleSubmit(onSubmit)}>
+          {/* 名称 */}
+          <div className="mb-4">
+            <label className="block text-xs text-zinc-500 mb-1">名称</label>
+            {isEditing ? (
+              <>
+                <input
+                  type="text"
+                  {...register('name')}
+                  className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-blue-500"
+                />
+                {errors.name && (
+                  <p className="text-[10px] text-red-500 mt-1">{errors.name.message}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-zinc-100">{asset.name}</p>
+            )}
+          </div>
 
-        {/* 描述 */}
-        <div className="mb-4">
-          <label className="block text-xs text-zinc-500 mb-1">描述</label>
-          {isEditing ? (
-            <textarea
-              value={editData.description}
-              onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-              rows={4}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-blue-500 resize-none"
-            />
-          ) : (
-            <p className="text-zinc-400 text-sm">{asset.description || '无描述'}</p>
-          )}
-        </div>
+          {/* 描述 */}
+          <div className="mb-4">
+            <label className="block text-xs text-zinc-500 mb-1">描述</label>
+            {isEditing ? (
+              <textarea
+                {...register('description')}
+                rows={4}
+                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-blue-500 resize-none"
+              />
+            ) : (
+              <p className="text-zinc-400 text-sm">{asset.description || '无描述'}</p>
+            )}
+          </div>
+        </form>
 
         {/* 参考图片 */}
         {asset.referenceImages.length > 1 && (
@@ -555,14 +583,16 @@ function AssetDetailPanel({ asset, onClose, onUpdate, onDelete, onArchive }: Ass
         {isEditing ? (
           <div className="flex gap-2">
             <button
-              onClick={handleSave}
+              type="submit"
+              form="asset-detail-form"
               className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg"
             >
               保存
             </button>
             <button
+              type="button"
               onClick={() => {
-                setEditData({ name: asset.name, description: asset.description });
+                reset();
                 setIsEditing(false);
               }}
               className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-lg"

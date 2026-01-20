@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Environment variable for API URL (to be set later, default to localhost for dev)
-const API_BASE_URL = import.meta.env.VITE_API_ABSE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? '/api' : 'http://127.0.0.1:8000/api');
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -210,7 +210,14 @@ export const mockApi = {
       id: Math.floor(Math.random() * 1000),
       name: data.name || 'Untitled',
       type: data.type || 'story',
+      resolution: data.resolution || { width: 1920, height: 1080 },
+      fps: data.fps || 24,
+      lock_character: false,
+      lock_style: false,
+      lock_world: false,
+      lock_key_object: false,
       updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       cover_url: 'https://placehold.co/600x400/3a3a3a/FFF?text=New+Project',
     };
   },

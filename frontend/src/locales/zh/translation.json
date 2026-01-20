@@ -34,6 +34,7 @@
             "description": "开启新的创作旅程。在下方设置项目详情。",
             "name_label": "项目名称",
             "name_placeholder": "例如：黑客帝国重装上阵",
+            "name_too_short": "项目名称至少需要 {{min}} 个字符",
             "type_label": "项目类型"
         }
     },

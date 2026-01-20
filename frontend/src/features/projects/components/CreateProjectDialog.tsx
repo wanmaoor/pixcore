@@ -3,9 +3,10 @@ import { X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { projectApi } from '../../../lib/api';
-import type { Project } from '../../../lib/api-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useFormWithValidation } from '../../../hooks/useFormWithValidation';
+import { projectSchema, ProjectFormValues } from '../../../lib/validation';
 
 interface CreateProjectDialogProps {
     open: boolean;
@@ -17,22 +18,36 @@ export const CreateProjectDialog = ({ open, onOpenChange }: CreateProjectDialogP
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        name: '',
-        type: 'story' as Project['type'],
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        formState: { errors },
+    } = useFormWithValidation<ProjectFormValues>({
+        schema: projectSchema,
+        defaultValues: {
+            name: '',
+            type: 'story',
+            resolution: { width: 1920, height: 1080 },
+            fps: 24,
+        },
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const selectedType = watch('type');
+
+    const onSubmit = async (data: ProjectFormValues) => {
         setLoading(true);
         try {
-            const newProject = await projectApi.create(formData);
+            const newProject = await projectApi.create(data);
             // 刷新项目列表缓存
             queryClient.invalidateQueries({ queryKey: ['projects'] });
             onOpenChange(false);
             navigate(`/project/${newProject.id}`);
         } catch (error) {
             console.error('Failed to create project', error);
+            // 这里可以添加更友好的错误提示，例如使用 toast
         } finally {
             setLoading(false);
         }
@@ -50,19 +65,23 @@ export const CreateProjectDialog = ({ open, onOpenChange }: CreateProjectDialogP
                         </Dialog.Description>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
                         <div className="grid gap-2">
                             <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                                 {t('projects.create_dialog.name_label')}
                             </label>
                             <input
                                 id="name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                {...register('name')}
                                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 placeholder={t('projects.create_dialog.name_placeholder')}
                                 required
                             />
+                            {errors.name && (
+                                <p className="text-xs text-destructive">
+                                    {t(errors.name.message as string, { min: 2, max: 50 })}
+                                </p>
+                            )}
                         </div>
 
                         <div className="grid gap-2">
@@ -70,14 +89,14 @@ export const CreateProjectDialog = ({ open, onOpenChange }: CreateProjectDialogP
                                 {t('projects.create_dialog.type_label')}
                             </label>
                             <div className="grid grid-cols-3 gap-2">
-                                {['story', 'animation', 'short'].map((type) => (
+                                {(['story', 'animation', 'short'] as const).map((type) => (
                                     <button
                                         key={type}
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, type: type as Project['type'] })}
+                                        onClick={() => setValue('type', type)}
                                         className={`
                       flex items-center justify-center px-3 py-2 text-sm rounded-md border transition-all
-                      ${formData.type === type
+                      ${selectedType === type
                                                 ? 'bg-primary text-primary-foreground border-primary'
                                                 : 'bg-card hover:bg-accent hover:text-accent-foreground border-input'}
                     `}

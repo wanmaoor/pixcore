@@ -34,6 +34,7 @@
             "description": "Start a new creative journey. Set up your project details below.",
             "name_label": "Project Name",
             "name_placeholder": "e.g. The Matrix Reloaded",
+            "name_too_short": "Project name must be at least {{min}} characters",
             "type_label": "Project Type"
         }
     },

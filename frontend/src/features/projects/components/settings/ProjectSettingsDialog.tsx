@@ -7,6 +7,9 @@ import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Settings, Monitor, Lock, Wand2 } from 'lucide-react';
 import { ConsistencySettingsPanel, ConsistencySettings } from './ConsistencySettings';
+import { useFormWithValidation } from '../../../../hooks/useFormWithValidation';
+import { projectUpdateSchema, ProjectFormValues } from '../../../../lib/validation';
+import { useTranslation } from 'react-i18next';
 
 interface ProjectSettings {
   id: number;
@@ -72,20 +75,32 @@ export function ProjectSettingsDialog({
   onConsistencyChange,
   onAssetIdsChange,
 }: ProjectSettingsDialogProps) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('basic');
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    name: project.name,
-    type: project.type,
-    resolution: project.resolution,
-    fps: project.fps,
-    default_model: project.default_model || '',
-    default_negative_prompt: project.default_negative_prompt || '',
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useFormWithValidation<ProjectFormValues>({
+    schema: projectUpdateSchema,
+    defaultValues: {
+      name: project.name,
+      type: project.type,
+      resolution: project.resolution,
+      fps: project.fps,
+      default_model: project.default_model || '',
+      default_negative_prompt: project.default_negative_prompt || '',
+    },
   });
 
   // 当 project 变化时更新表单
   useEffect(() => {
-    setFormData({
+    reset({
       name: project.name,
       type: project.type,
       resolution: project.resolution,
@@ -93,18 +108,22 @@ export function ProjectSettingsDialog({
       default_model: project.default_model || '',
       default_negative_prompt: project.default_negative_prompt || '',
     });
-  }, [project]);
+  }, [project, reset]);
 
-  const handleSave = async () => {
+  const currentType = watch('type');
+  const currentResolution = watch('resolution');
+  const currentFps = watch('fps');
+
+  const onSubmit = async (data: ProjectFormValues) => {
     setSaving(true);
     try {
       await onSave({
-        name: formData.name,
-        type: formData.type,
-        resolution: formData.resolution,
-        fps: formData.fps,
-        default_model: formData.default_model || null,
-        default_negative_prompt: formData.default_negative_prompt || null,
+        name: data.name,
+        type: data.type,
+        resolution: data.resolution,
+        fps: data.fps,
+        default_model: data.default_model || null,
+        default_negative_prompt: data.default_negative_prompt || null,
       });
       onOpenChange(false);
     } catch (error) {
@@ -146,6 +165,7 @@ export function ProjectSettingsDialog({
               return (
                 <button
                   key={tab.key}
+                  type="button"
                   onClick={() => setActiveTab(tab.key)}
                   className={`flex items-center gap-2 px-4 py-3 text-sm border-b-2 transition-colors ${
                     activeTab === tab.key
@@ -162,163 +182,165 @@ export function ProjectSettingsDialog({
 
           {/* 内容区 */}
           <div className="flex-1 overflow-auto p-6">
-            {/* 基础设置 */}
-            {activeTab === 'basic' && (
-              <div className="space-y-6">
-                {/* 项目名称 */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    项目名称
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-blue-500"
-                  />
-                </div>
+            <form id="project-settings-form" onSubmit={handleSubmit(onSubmit)}>
+              {/* 基础设置 */}
+              {activeTab === 'basic' && (
+                <div className="space-y-6">
+                  {/* 项目名称 */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      项目名称
+                    </label>
+                    <input
+                      type="text"
+                      {...register('name')}
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-blue-500"
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {t(errors.name.message as string, { min: 2, max: 50 })}
+                      </p>
+                    )}
+                  </div>
 
-                {/* 项目类型 */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    项目类型
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(['story', 'animation', 'short'] as const).map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => setFormData({ ...formData, type })}
-                        className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
-                          formData.type === type
-                            ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                        }`}
-                      >
-                        {type === 'story' && '故事片'}
-                        {type === 'animation' && '动画'}
-                        {type === 'short' && '短片'}
-                      </button>
-                    ))}
+                  {/* 项目类型 */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      项目类型
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(['story', 'animation', 'short'] as const).map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setValue('type', type)}
+                          className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
+                            currentType === type
+                              ? 'bg-blue-600 border-blue-500 text-white'
+                              : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                          }`}
+                        >
+                          {type === 'story' && '故事片'}
+                          {type === 'animation' && '动画'}
+                          {type === 'short' && '短片'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 分辨率 */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      分辨率
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {resolutionPresets.map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() =>
+                            setValue('resolution', { width: preset.width, height: preset.height })
+                          }
+                          className={`px-3 py-2 rounded-lg border text-xs transition-colors ${
+                            currentResolution?.width === preset.width &&
+                            currentResolution?.height === preset.height
+                              ? 'bg-blue-600 border-blue-500 text-white'
+                              : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 帧率 */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      帧率 (FPS)
+                    </label>
+                    <div className="flex gap-2">
+                      {fpsPresets.map((fps) => (
+                        <button
+                          key={fps}
+                          type="button"
+                          onClick={() => setValue('fps', fps)}
+                          className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
+                            currentFps === fps
+                              ? 'bg-blue-600 border-blue-500 text-white'
+                              : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                          }`}
+                        >
+                          {fps}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              )}
 
-                {/* 分辨率 */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    分辨率
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {resolutionPresets.map((preset) => (
-                      <button
-                        key={preset.label}
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            resolution: { width: preset.width, height: preset.height },
-                          })
-                        }
-                        className={`px-3 py-2 rounded-lg border text-xs transition-colors ${
-                          formData.resolution.width === preset.width &&
-                          formData.resolution.height === preset.height
-                            ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
+              {/* 一致性设置 */}
+              {activeTab === 'consistency' && (
+                <ConsistencySettingsPanel
+                  settings={consistencySettings}
+                  assets={assets}
+                  onSettingsChange={onConsistencyChange}
+                  onAssetIdsChange={onAssetIdsChange}
+                />
+              )}
+
+              {/* 生成设置 */}
+              {activeTab === 'generation' && (
+                <div className="space-y-6">
+                  {/* 默认模型 */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      默认生成模型
+                    </label>
+                    <select
+                      {...register('default_model')}
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">选择模型...</option>
+                      <option value="dall-e-3">DALL-E 3</option>
+                      <option value="stable-diffusion-xl">Stable Diffusion XL</option>
+                      <option value="midjourney">Midjourney</option>
+                      <option value="flux-pro">Flux Pro</option>
+                    </select>
+                  </div>
+
+                  {/* 默认负面提示词 */}
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      默认负面提示词
+                    </label>
+                    <textarea
+                      {...register('default_negative_prompt')}
+                      placeholder="输入默认负面提示词，将应用于所有镜头生成..."
+                      rows={4}
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 resize-none"
+                    />
+                    <p className="text-xs text-zinc-500 mt-1">
+                      负面提示词会告诉 AI 避免生成哪些内容
+                    </p>
                   </div>
                 </div>
-
-                {/* 帧率 */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    帧率 (FPS)
-                  </label>
-                  <div className="flex gap-2">
-                    {fpsPresets.map((fps) => (
-                      <button
-                        key={fps}
-                        onClick={() => setFormData({ ...formData, fps })}
-                        className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
-                          formData.fps === fps
-                            ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                        }`}
-                      >
-                        {fps}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 一致性设置 */}
-            {activeTab === 'consistency' && (
-              <ConsistencySettingsPanel
-                settings={consistencySettings}
-                assets={assets}
-                onSettingsChange={onConsistencyChange}
-                onAssetIdsChange={onAssetIdsChange}
-              />
-            )}
-
-            {/* 生成设置 */}
-            {activeTab === 'generation' && (
-              <div className="space-y-6">
-                {/* 默认模型 */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    默认生成模型
-                  </label>
-                  <select
-                    value={formData.default_model}
-                    onChange={(e) =>
-                      setFormData({ ...formData, default_model: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="">选择模型...</option>
-                    <option value="dall-e-3">DALL-E 3</option>
-                    <option value="stable-diffusion-xl">Stable Diffusion XL</option>
-                    <option value="midjourney">Midjourney</option>
-                    <option value="flux-pro">Flux Pro</option>
-                  </select>
-                </div>
-
-                {/* 默认负面提示词 */}
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    默认负面提示词
-                  </label>
-                  <textarea
-                    value={formData.default_negative_prompt}
-                    onChange={(e) =>
-                      setFormData({ ...formData, default_negative_prompt: e.target.value })
-                    }
-                    placeholder="输入默认负面提示词，将应用于所有镜头生成..."
-                    rows={4}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-blue-500 resize-none"
-                  />
-                  <p className="text-xs text-zinc-500 mt-1">
-                    负面提示词会告诉 AI 避免生成哪些内容
-                  </p>
-                </div>
-              </div>
-            )}
+              )}
+            </form>
           </div>
 
           {/* 底部操作 */}
           <div className="flex justify-end gap-3 p-4 border-t border-zinc-800">
             <button
+              type="button"
               onClick={() => onOpenChange(false)}
               className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200"
             >
               取消
             </button>
             <button
-              onClick={handleSave}
+              type="submit"
+              form="project-settings-form"
               disabled={saving}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm rounded-lg"
             >

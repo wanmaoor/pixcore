@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Folder, Check, RotateCcw, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useStoragePath, useTauriEnvironment } from '../../../hooks/useTauri';
 
+import { storagePathSchema } from '../../../lib/validation';
+
 /**
  * 存储路径设置组件
  */
@@ -14,8 +16,12 @@ export function StoragePathSettings() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSave = async () => {
-    if (!inputValue.trim()) {
-      setSaveError('请输入存储路径');
+    const trimmedPath = inputValue.trim();
+    
+    // Validate with zod
+    const validation = storagePathSchema.safeParse(trimmedPath);
+    if (!validation.success) {
+      setSaveError(validation.error.errors[0].message);
       return;
     }
 
@@ -23,7 +29,7 @@ export function StoragePathSettings() {
     setSaveError(null);
 
     try {
-      await setPath(inputValue.trim());
+      await setPath(trimmedPath);
       setInputValue('');
       setIsEditing(false);
     } catch (err) {

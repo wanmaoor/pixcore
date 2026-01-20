@@ -9,6 +9,8 @@ interface ApiKeyInputProps {
   description?: string;
 }
 
+import { apiKeySchema } from '../../../lib/validation';
+
 /**
  * API Key 输入组件
  * 支持密钥的安全存储、显示/隐藏、验证状态显示
@@ -22,8 +24,12 @@ export function ApiKeyInput({ provider, label, description }: ApiKeyInputProps) 
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSave = async () => {
-    if (!inputValue.trim()) {
-      setSaveError('请输入 API Key');
+    const trimmedKey = inputValue.trim();
+    
+    // Validate with zod
+    const validation = apiKeySchema.safeParse(trimmedKey);
+    if (!validation.success) {
+      setSaveError(validation.error.errors[0].message);
       return;
     }
 
@@ -31,12 +37,13 @@ export function ApiKeyInput({ provider, label, description }: ApiKeyInputProps) 
     setSaveError(null);
 
     try {
-      await saveKey(inputValue.trim());
+      await saveKey(trimmedKey);
       setInputValue('');
       setIsEditing(false);
     } catch (err) {
       setSaveError(String(err));
-    } finally {
+    }
+    finally {
       setIsSaving(false);
     }
   };
