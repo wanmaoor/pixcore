@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ShotList } from './ShotList';
 import { useStoryboardStore } from '../stores/storyboardStore';
-import { mockApi } from '../../../lib/api-client';
+import { mockApi } from '../../../lib/mock-api';
 
 // Mock dependencies
 vi.mock('react-i18next', () => ({
@@ -11,7 +11,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../../lib/api-client', () => ({
+vi.mock('../../../lib/mock-api', () => ({
   mockApi: {
     createShot: vi.fn().mockResolvedValue({
       id: 1,
